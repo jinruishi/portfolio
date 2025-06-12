@@ -1,8 +1,11 @@
-body, html, #root, .portfolio {
+body,
+html,
+#root,
+.portfolio {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .hero {
@@ -12,7 +15,9 @@ body, html, #root, .portfolio {
   align-items: center;
   text-align: center;
   color: white;
-  background: linear-gradient(180deg, #89caff 0%, #f6b2c2 100%);
+  background: linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 50%, #fbc2eb 100%);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .hero-content h1 {

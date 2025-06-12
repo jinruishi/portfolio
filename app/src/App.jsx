@@ -5,8 +5,8 @@ function App() {
     <div className="portfolio">
       <header className="hero">
         <div className="hero-content">
-          <h1>My Game Portfolio</h1>
-          <p>Showcasing interactive worlds and experiments</p>
+          <h1>Makoto Shinkai Inspired Worlds</h1>
+          <p>Cel-shaded adventures and stylized experiments</p>
         </div>
       </header>
       <main className="content">
