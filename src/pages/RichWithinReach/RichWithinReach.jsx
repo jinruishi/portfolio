@@ -5,6 +5,8 @@ import {Card} from "@components/Card/Card.jsx";
 import Button from "@components/Button/Button.jsx";
 import Sidebar from "@components/Sidebar/Sidebar.jsx";
 import text_styles from '@styles/text.module.css'
+import MediaFrame from "@components/MediaFrame/MediaFrame.jsx";
+import ReactPlayer from "react-player";
 
 function RichWithinReach() {
     return (
@@ -34,6 +36,8 @@ function RichWithinReach() {
                         process, the game teaches the player to recognise the way scams
                         show up in the real world.</span>
                     </p>
+                    <MediaFrame
+                        media='https://www.youtube.com/watch?v=fu57lGoPLKQ'/>
                     <p>
                         <span className={text_styles.pBold}>
                             You are Macs</span>
@@ -47,7 +51,6 @@ function RichWithinReach() {
                         <span className={text_styles.pBold}>
                             Your call.
                         </span>
-
                     </p>
                 </Card>
             </div>

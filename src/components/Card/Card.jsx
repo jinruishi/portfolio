@@ -9,6 +9,7 @@ import '@styles/global.module.css'
  * @param title Title of card
  * @param children Content
  * @param type Title or content. Title cards have larger fonts.
+ * @param className
  * @returns {JSX.Element}
  * @constructor
  */
