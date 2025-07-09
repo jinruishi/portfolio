@@ -1,0 +1,22 @@
+.sceneToScreen {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 6rem 12rem 6rem 12rem;
+}
+
+.arrowButton {
+    position: relative;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    max-width: 45%;
+    gap: 3rem;
+}
+
+.title {
+    line-height: 4rem;
+}
+
