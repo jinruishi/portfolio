@@ -1,416 +1,1125 @@
-import React from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import styles from './SceneToScreen.module.css'
 import Button from "@components/Button/Button.jsx";
 import ArrowButton from "@components/ArrowButton/ArrowButton.jsx";
 import {Card} from "@components/Card/Card.jsx";
 import Spacer from "@components/Spacer/Spacer.jsx";
 import Paragraph from "@components/Paragraph/Paragraph.jsx";
-import {B, I, CF, CK, CN, CT, CC} from '@util/typography.jsx'
+import ScrollyTeller from "@components/ScrollyTeller/ScrollyTeller.jsx";
+import animationData from '@animations/scene-to-screen.json'
+import {B, I} from "@util/typography.jsx";
+import Math from '@components/Math/Math.jsx'
 import List from "@components/List/List.jsx";
-import IsometricScene from "@svg/IsometricScene.jsx";
-import SvgContainer from "@components/SvgContainer/SvgContainer.jsx";
-import ScreenView from "@svg/ScreenView.jsx";
-import Code from "@components/Code/Code.jsx";
-import CodeLine from "@components/Code/CodeLine.jsx";
-import {Link} from "react-router";
-import TextLink from "@components/TextLink/TextLink.jsx";
 
 function SceneToScreen() {
+    let firstTextCardRef = useRef(null);
+
+    /* we want the scrollyteller to be the same width as the
+       text cards, and also be aligned to the top of the first text card */
+    const [scrollyTellerY, setScrollyTellerY] = useState(0);
+    const [textCardWidth, setTextCardWidth] = useState(0);
+
+    /*
+    Ideally the scrollyteller should be positioned slightly above half
+    of the window's vertical height, but it should never exceed the top
+    of the first text card
+     */
+    const heightScalar = 0.3; // rough desired vertical position of scrollyteller
+    useEffect(() => {
+        const handleScroll = () => {
+            if (firstTextCardRef.current) {
+                let rect = firstTextCardRef.current.getBoundingClientRect();
+                console.log(window.innerHeight * heightScalar);
+                console.log(rect.top);
+                if (rect.top < window.innerHeight * heightScalar) {
+                    setScrollyTellerY(window.innerHeight * heightScalar);
+                } else {
+                    setScrollyTellerY(rect.top);
+                }
+                setTextCardWidth(rect.width);
+            }
+        }
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        }
+    }, []);
+
+    // intersection tests for progressing the scrollyteller
+    const [currentMarker, setCurrentMarker] = useState(0);
+    const markerStack = useRef([]);
+    const m0Ref = useRef(null);
+    const m1Ref = useRef(null);
+    const m2Ref = useRef(null);
+    const m3Ref = useRef(null);
+    const m4Ref = useRef(null);
+    useEffect(() => {
+        const options = {
+            root: null,
+            threshold: 1.0,
+            rootMargin: '0px 0px -50% 0px'
+        };
+        const callback = (entries, observer) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    // console.log(`incoming intersection: ${entry.target.id}`);
+                    if (!markerStack.current.includes(entry.target.id)) {
+                        markerStack.current.push(entry.target.id);
+                    }
+                }
+
+                if (!entry.isIntersecting) {
+                    // console.log(`outgoing intersection: ${entry.target.id}`);
+                    if (entry.target.id === markerStack.current[markerStack.current.length - 1]) {
+                        markerStack.current.pop();
+                    }
+                }
+
+                setCurrentMarker(markerStack.current[markerStack.current.length - 1]);
+            });
+        };
+        const observer = new IntersectionObserver(callback
+            , options);
+        observer.observe(m0Ref.current);
+        observer.observe(m1Ref.current);
+        observer.observe(m2Ref.current);
+        observer.observe(m3Ref.current);
+        observer.observe(m4Ref.current);
+
+        return () => {
+            observer.disconnect();
+        }
+    }, []);
+
+
     return (
         <div className={styles.sceneToScreen}>
+            {/*<div className={styles.tellerDebug}/>*/}
             <ArrowButton route='/articles' direction='left'
                          className={styles.arrowButton}/>
             <div className={styles.content}>
                 <Card>
-                    <Paragraph size={1} className={styles.title}>From Scene to
+                    <Paragraph size={1} className={styles.title}>From Scene
+                        to
                         Screen in Vulkan</Paragraph>
                 </Card>
+                <div className={styles.textCards} ref={firstTextCardRef}>
+                    <Card>
+                        <Paragraph size={2}>How do humans see?</Paragraph>
+                        <div ref={m0Ref} id='m0'/>
+                        <Spacer size={2}/>
+                        <Paragraph>Humans see because they have
+                            eyes.</Paragraph>
+                        <Spacer/>
+                        <Paragraph>Light rays reflect off objects
+                            in the surroundings in random directions.
+                            A small portion of the reflected rays happen to
+                            coincide with the cornea in such a way that they
+                            are able to enter the eye and strike the
+                            retina.</Paragraph>
+                        <Spacer/>
+                        <Paragraph>The light ray enters the
+                            cornea, traveling in a straight line until
+                            it strikes the light sensitive retina. Receptor
+                            cells
+                            capture the signal at the struck location, before
+                            sending the information to the brain.
+                            The brain interprets this signal as color, or as
+                            in the illustration on the right, red.
+                        </Paragraph>
+                        <div ref={m1Ref} id='m1'/>
+                    </Card>
+                    <Card>
+                        <Paragraph size={2}>The screen abstraction</Paragraph>
+                        <Spacer size={2}/>
+                        <Paragraph>The image formed on the retina is the
+                            image seen in the mind. </Paragraph>
+                        <Spacer/>
+                        <Paragraph>Theoretically,
+                            if one were able to trigger precisely
+                            the same receptors, at the same locations,
+                            with the same wavelengths and intensities
+                            of light, the human experiencing the image would not
+                            know the difference.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            This is the fundamental goal of computer graphics.
+                            The strength of computer graphics is in its
+                            capability of reproducing visual experiences
+                            of a physical world without the need for
+                            real, physical objects.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            The core question is this: where, and how,
+                            should a screen filled with lights be
+                            placed in front of an eye, to produce an illusion
+                            of a world?
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            To begin tackling this problem, two major
+                            abstractions are first made to the model of the eye.
+                        </Paragraph>
+                        <Spacer size={3}/>
+
+                        <Paragraph size={3}>1. The retina</Paragraph>
+                        <div ref={m2Ref} id='m2'/>
+                        <Spacer/>
+                        <Paragraph>Anything captured on the retina is part of
+                            the final
+                            image experienced. Ideally, the screen should be
+                            able to target all parts of the retina, so the first
+                            intuition is to have a similarly curved screen.
+                        </Paragraph>
+
+                        <Spacer/>
+                        <Paragraph>
+                            In practical situations, though, humans only
+                            care about a much smaller cone of light entering
+                            through the iris. After all, people don't
+                            particularly pay attention to their peripheral
+                            vision constantly.
+                        </Paragraph>
+                        <div ref={m3Ref} id='m3'/>
+
+                        <Spacer/>
+                        <Paragraph>Since the total change in curvature
+                            across this smaller section of the eye is smaller,
+                            considering it a completely flat surface is
+                            feasible. This allows the screen
+                            to be flat as well, giving rise to the design of
+                            standard modern monitors.</Paragraph>
+
+                        <Spacer size={3}/>
+                        <Paragraph size={3}>2. The screen</Paragraph>
+                        <Spacer/>
+                        <Paragraph>For various historical and technical reasons,
+                            screens are rectangular. This has major implications
+                            for the way computer graphics is conducted, because
+                            it implies that any mathematics that happens behind
+                            the
+                            scenes is always chosen with the end goal in mind: a
+                            fixed, <I>x</I> by <I>y</I> array.
+                        </Paragraph>
+                    </Card>
+
+                    <Card>
+                        <Paragraph size={2}>Eye space
+                        </Paragraph>
+                        <Spacer size={2}/>
+
+                        <Paragraph size={3}>Concept</Paragraph>
+                        <Spacer/>
+
+                        <div ref={m4Ref} id='m4'/>
+                        <Paragraph>Consider the diagram shown on the
+                            right, which represents a side-on view
+                            of the scene described in earlier sections.
+                            The x-axis points out of the screen.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            The idea is to use a flat screen of pixels to
+                            trigger visual receptors in such a way that a scene
+                            with
+                            depth is (reasonably) accurately perceived. To
+                            achieve this,
+                            a few simple assumptions are made.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <List>
+                            <span>The coordinate system is such that the viewer's
+                            eye is at <Math tex={'(0, 0)'}/></span>
+                            <span>It is not known precisely how far the the viewer sits
+                            from their monitor, so an arbitrary and easily adjustable
+                            variable <Math tex={'n'}/> represents this distance.</span>
+                            <span>The coordinate system is right-handed. The X, Y, and Z axes
+                                are right, up and forward, respectively.</span>
+                        </List>
+                        <Spacer/>
+
+                        <Paragraph>Let the <I>camera</I> be an object with
+                            the exactly same functionality as the iris,
+                            with a location exactly matching that of the
+                            iris, at <Math tex={'(0, 0)'}/>.
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>Let the <I>near
+                            plane</I> be a plane of the exact same dimensions as
+                            the monitor.
+                            That is, if the user's monitor is 1920
+                            pixels in width and 1080 pixels in height, then the
+                            hypothetical screen is 1920 units in width and 1080
+                            units in height.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            The plane is located at <Math tex={'(0, n)'}/>, the
+                            same distance from the viewer as the monitor.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            While constructing this system seems redundant, it
+                            is relevant later.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>Pretend that there is actually an object
+                            at the desired location behind the screen, then
+                            project rays from the object directly to the camera.
+                            Note down that the rays intersect, or
+                            are <I>projected</I> onto the
+                            near plane in the range <Math
+                                tex={'a \\geq y \\geq -a'}/>.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            For all corresponding pixels from {' '}
+                            <Math tex={'(n, 0)'}/> {' '} to <Math
+                            tex={'(n, a)'}/> on the monitor, display the color
+                            green.
+                            Similarly, for all pixels from <Math
+                            tex={'(n, 0)'}/> to <Math
+                            tex={'(n, -a)'}/>, display the color red.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>In theory, the image displayed on the
+                            monitor should be a perfect representation that
+                            causes the viewer to perceive the object at a
+                            distance <Math tex={'o'}/>,
+                            directly in front of themselves. In practice,
+                            small deviations (such as the fact that the assumed
+                            distance {' '}
+                            <Math tex={'o'}/> from the monitor is not precisely
+                            accurate)
+                            break the illusion, but this is not of any concern.
+                            After all, there is no expectation for images
+                            displayed
+                            on monitors to be absolutely indistinguishable from
+                            reality.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            This is the core idea behind displaying
+                            3-dimensional scenes.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            Suppose the user wants to view the
+                            object from somewhere above, for example, from <Math
+                            tex={'(n, 10)'}/>, and looking down at <Math
+                            tex={'(o, 0)'}/>.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            By moving the camera and the near plane in tandem
+                            such that the camera sits at <Math
+                            tex={'(n, 10)'}/>, and rotating the system
+                            to look down at <Math tex={'(o, 0)'}/>, the
+                            programmer can capture an image as seen from above
+                            on the near
+                            plane. Since the near plane maps directly onto the
+                            screen, there is no issue when displaying the
+                            captured
+                            damage as an image on the monitor either.
+                        </Paragraph>
+                        <Spacer size={3}/>
+
+                        <Paragraph size={3}>
+                            Eye space
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>There is a crucial issue to consider.
+                            When the camera is at <Math
+                                tex={'(n, 10)'}/> and looking down at the
+                            object,
+                            the near plane is also slanted.
+
+                            Recall that all the items being discussed are
+                            3-dimensional.
+
+                            The coordinates captured on the near plane aren't
+                            conducive for
+                            mapping onto the screen. Ideally, captured
+                            coordinates on the near plane
+                            should look like <Math tex={'(500, 1000, z)'}/>,
+                            where <Math tex={'z = n'}/> and is constant.
+
+                            This is desirable because it is both
+                            understandable and easy to program for: illuminate
+                            the
+                            pixel at <Math
+                                tex={'(500, 1000)'}/> on the monitor.
+                            However, since the near plane is at an
+                            angle, captured coordinates look more like <Math
+                                tex={'(273.54, 1728.23, 3.73)'}/>; what's worse
+                            is that
+                            the z-coordinate varies across the capturing
+                            surface.
+                            The solution is to, regardless of the position
+                            of the camera when capturing a scene, convert the
+                            entire
+                            coordinate system of the scene
+                            to become relative to the camera.
+                            The result of this change is that the ideal
+                            situation is forcibly recreated:
+                            the camera will be at <Math tex={'(0, 0)'}/> by
+                            virtue of the way the transformation is calculated.
+                            This is discussed later.
+                            As a side note, the near plane will also end up back
+                            at <Math tex={'z = n'}/>. This is because the
+                            system
+                            was originally constructed such that the near plane
+                            is precisely <Math tex={'n'}/> units away from the
+                            camera;
+                            the coordinate transformation is constructed to
+                            "reset"
+                            the system back into the ideal position, essentially
+                            undoing all the
+                            changes made by the programmer when positioning the
+                            camera. Of course, a coordinate frame change does
+                            not affect the
+                            relative position of any objects in the scene,
+                            therefore the
+                            visual composition of the scene remains unaffected.
+                            With this technique, regardless of the camera's
+                            position
+                            in the scene, the captured coordinates on the near
+                            plane
+                            can always be displayed in a friendly manner (i.e.,
+                            constant z).
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>The coordinate transform is represented with
+                            a single matrix, called the <I>view matrix</I>.
+                            Objects placed freely in the
+                            world have their own coordinates, and the
+                            coordinates are
+                            interpreted as belonging in <I>world space</I>. This
+                            includes the camera,
+                            which is also positioned in world coordinates.
+
+                            The desired outcome is for the camera to be
+                            positioned at <Math tex={'(0, 0)'}/>,
+                            while keeping the relative position of all other
+                            objects to the camera unchanged.
+                            This final coordinate system is called <I>eye
+                                space</I>, as the camera
+                            acts as a sort of virtual "eye" in the scene, and
+                            the final setup is
+                            such that everything is relative to this "eye" at
+                            the origin.
+
+                            It is important to remember that coordinate system
+                            changes don't involve the movement of any objects in
+                            the
+                            scene, including the camera.
+                            Rather, the only thing that changes is the
+                            coordinate representation of each object.
+                            The origin of the world is moving.
+
+                            Let the view matrix be <Math tex={'V'}/>.
+
+                            The positioned camera has a location and a rotation.
+                            Therefore, <Math tex={'V'}/> is derived from two
+                            matrix components:
+                            one to correct the location of the camera <Math
+                                tex={'V_l'}/>, and one to
+                            correct the rotation <Math tex={'V_r'}/>.
+                            First, the location is considered. The camera needs
+                            to be
+                            at <Math tex={'(0, 0)'}/>.
+
+                            Let the world coordinates of the camera be <Math
+                                tex={'c_w = (c_{x_w}, c_{y_w}, c_{z_w}, c_{w_w})'}/>.
+                            Let
+                            the eye coordinates of the camera be <Math
+                                tex={'c_e = (c_{x_e}, c_{y_e}, c_{z_e}, c_{w_e}) = (0, 0, 0, 1)'}/>.
+
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix} 0 \\\\ 0 \\\\ 0 \\\\ 1 \\end{bmatrix} = V_l' +
+                                      '\\begin{bmatrix} x_w \\\\ y_w \\\\ z_w \\\\ w_w \\end{bmatrix}'}/>
+
+                            By observation,
+                            <Math displayMode={true}
+                                  tex={'V_l = \\begin{bmatrix}' +
+                                      '1 & 0 & 0 & -c_{x_w} \\\\' +
+                                      '0 & 1 & 0 & -c_{y_w} \\\\' +
+                                      '0 & 0 & 1 & -c_{z_w} \\\\' +
+                                      '0 & 0 & 0 & 1 \\end{bmatrix}'}/>
+
+                            This is commonly interpreted as a translation
+                            by {' '}
+                            <Math tex={'(-x_w, -y_w, -z_w)'}/>, but it must once
+                            again be stressed that not only is the camera
+                            "moving" by this
+                            amount, so is every other point in the space.
+
+                            Next, the rotation is considered. While the camera
+                            is now
+                            situated at the origin, it is still pointing in
+                            whichever direction
+                            it was pointing at before the translation.
+
+                            By convention, eye space is such that the camera's
+                            "forward" vector <Math tex={'f'}/>
+                            points in the direction of the negative z-axis. The
+                            "up" vector <Math tex={'u'}/> of the camera will
+                            point in the
+                            direction
+                            of the y-axis, and the "right" vector <Math
+                                tex={'r'}/> (relative
+                            to the camera's
+                            "forward" and "up") will point in the direction of
+                            the x-axis.
+
+                            This is also a simple change of basis
+                            transformation;
+                            to derive this component of the view matrix, each of
+                            the
+                            3 basis vectors as described above need to be found
+                            for the camera (in world coordinates).
+
+                            The basis vector for the z-axis is tackled first.
+                            Let the world coordinates of the point the camera is
+                            looking at
+                            be <Math tex={'p'}/>, then the forward vector of the
+                            camera is <Math
+                                tex={'\\frac{p - c}{\\left|p-c\\right|}'}/>,
+                            that is, the vector from the camera to the point.
+                            However, recall that the goal is to have the camera
+                            point down the negative z-axis. This implies that
+                            points in front of the camera in world space should
+                            end up being expressed with a negative z-coordinate.
+
+                            If <Math tex={'f'}/> is used as the z-axis basis
+                            vector
+                            as is, points in front of the camera in world space
+                            will end up with positive z-coordinates in eye
+                            space.
+                            This is because points in front have a z-coordinate
+                            that is a positive scalar multiple of the forward
+                            vector.
+
+                            To remedy this issue, the forward vector will be
+                            negated when
+                            used as the basis vector.
+
+                            The basis vector for the x-axis is calculated next.
+                            The up vector is used for this calculation. It
+                            should be noted
+                            that the up vector is provided by the programmer;
+                            without the
+                            up vector, even if the forward vector is specified,
+                            the orientation
+                            of the camera is undefined. <B>It is assumed that
+                                the provided
+                                up vector is also normalized</B>.
+
+                            <Math tex={'u'}/> and <Math tex={'f'}/> define a
+                            plane, therefore <Math
+                                tex={'f \\times u'}/> gives <Math
+                                tex={'r'}/> {' '}
+                            without issue. It is for this
+                            reason that the
+                            specification of the up vector
+                            does not need to be absolutely precise: it just
+                            needs to
+                            be able to define a unique plane with <Math
+                                tex={'f'}/>
+
+                            Note that the obtained <Math tex={'r'}/> is
+                            also guaranteed to be normalized.
+
+                            Finally, the basis vector for the y-axis is derived.
+                            The provided up vector cannot be used as-is, as it
+                            may not be precisely orthonormal to either <Math
+                                tex={'u'}/> or <Math tex={'r'}/>. A "true
+                            up" <Math tex={'u\''}/> is needed.
+                            Fortunately, this is straightforward: <Math
+                                tex={'u\' = r \\times f'}/>
+
+                            <Math displayMode={true}
+                                  tex={'V_r = \\begin{bmatrix}' +
+                                      'r_x & u_x & -f_x & 0 \\\\' +
+                                      'r_y & u_y & -f_y & 0\\\\' +
+                                      'r_z & u_z & -f_z & 0\\\\' +
+                                      '0 & 0 & 0 & 1 \\end{bmatrix}'}/>
+
+                            Finally, the view matrix may be assembled.
+                            The order of operations is important: for a point in
+                            world space <Math
+                                tex={'p'}/>,
+                            first the point must be translated before the
+                            rotation is corrected i.e.,
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      'Vp &= {V_r}{V_l}p \\\\' +
+                                      '&= \\begin{bmatrix}' +
+                                      'r_x & u_x & -f_x & 0 \\\\' +
+                                      'r_y & u_y & -f_y & 0\\\\' +
+                                      'r_z & u_z & -f_z & 0\\\\' +
+                                      '0 & 0 & 0 & 1 \\end{bmatrix}' +
+                                      '\\begin{bmatrix}' +
+                                      '1 & 0 & 0 & -c_{x_w} \\\\' +
+                                      '0 & 1 & 0 & -c_{y_w} \\\\' +
+                                      '0 & 0 & 1 & -c_{z_w} \\\\' +
+                                      '0 & 0 & 0 & 1 \\end{bmatrix}p \\\\' +
+                                      '&= \\begin{bmatrix}' +
+                                      'r_x & u_x & -f_x & -c_{x_w} \\\\' +
+                                      'r_y & u_y & -f_y & -c_{y_w} \\\\' +
+                                      'r_z & u_z & -f_z & -c_{z_w} \\\\' +
+                                      '0 & 0 & 0 & 1 \\end{bmatrix}p' +
+                                      '\\end{align*}'
+                                  }/>
+                        </Paragraph>
+                    </Card>
+
+                    <Card>
+                        <Paragraph size={2}>Normalized Device
+                            Coordinates</Paragraph>
+                        <Spacer size={2}/>
+
+                        <Paragraph size={3}>Concept</Paragraph>
+                        <Spacer/>
+                        <Paragraph>In the previous section, a system was
+                            established such that any camera placed freely
+                            in any scene can be converted into a standard
+                            representation
+                            in eye space. From that point onwards, determining
+                            the
+                            corresponding pixels to illuminate on the monitor
+                            should
+                            be a trivial task. However, there are still two
+                            pitfalls that
+                            need to be addressed.
+
+                            First, the near plane was defined to have the exact
+                            same dimensions
+                            as the user's monitor. This is a convenient
+                            assumption but is impractical.
+                            Not only are there innumerable monitor sizes in the
+                            world,
+                            the programmer or designer adjusting the camera and
+                            placing objects in the
+                            scene has no idea of the user's monitor size.
+
+                            Second, suppose that there are multiple objects
+                            in the scene instead of just one as in the example.
+                            Lines are projected from each object onto the near
+                            plane
+                            to determine where each object should be drawn on
+                            the screen.
+                            But what if the two objects are positioned such
+                            that,
+                            relative to the camera, one object is in front of
+                            the other?
+
+                            In this case, there are projected lines from both
+                            objects
+                            that share the same captured coordinate on the near
+                            plane.
+                            The projected coordinates of the object in front
+                            should always
+                            be prioritized, but since the output is only in two
+                            dimensions,
+                            there is no way for the renderer to know this
+                            information.
+
+                            To resolve both issues, the concept of <I>normalized
+                                device
+                                coordinates</I> is needed. NDC space is a
+                            bounded
+                            coordinate space
+                            defined by the graphics API, and is typically
+                            uniform in shape i.e., a unit cube at the origin.
+                            A transformation is applied to transform
+                            all points in eye space into NDC space, such that
+                            all points within the viewing frustum of the camera
+                            are within the bounds of the NDC space.
+
+                            In essence, NDC space is a 3-dimensional normalized
+                            container of near plane
+                            coordinates. The user's computer is responsible for
+                            mapping
+                            the NDC onto the user's screen in order to find out
+                            which pixels
+                            on the user's monitor should be illuminated. This
+                            way,
+                            the responsibility of having to know the target
+                            monitor size is
+                            removed from the people who worked on the scene.
+
+                            For Vulkan, NDC space is a half-cube centred at the
+                            origin,
+                            where <Math tex={'x \\in [-1, 1]'}/>, <Math
+                                tex={'y \\in [-1, 1]'}/>, <Math
+                                tex={'z \\in [0, 1]'}/>
+
+                            NDC space maps directly into screen (space).
+                            But what exactly is the screen? The target surface
+                            for the renderer to draw to, to display the
+                            projected coordinates,
+                            is not (though it can be) the entirety of the user's
+                            monitor.
+                            It is more likely that there is some fixed region on
+                            the monitor
+                            where the output image is displayed.
+                            In fact, before rendering even starts, the Vulkan
+                            application obtains a handle to some surface
+                            on the monitor from the operating system. The
+                            surface
+                            can be thought of as the region of pixels on the
+                            monitor
+                            the operating system has permitted the application
+                            to control. The very browser in which this website
+                            is rendered
+                            is most certainly part of some similar surface as
+                            well.
+
+                            Vulkan thus states that <Math
+                                tex={'x = -1'}/> corresponds to
+                            the left
+                            edge of this surface, and <Math
+                                tex={'x = 1'}/> corresponds to
+                            the right edge
+                            of this surface. Similarly, <Math
+                                tex={'y = -1'}/> corresponds to the top edge of
+                            this surface, and <Math tex={'y = 1'}/> corresponds
+                            to the bottom edge
+                            of this surface.
+
+                            The z-coordinate of each point in the NDC is the
+                            <I>depth</I> of the point. Vulkan states that
+                            a point at <Math tex={'z = 0'}/> is exactly
+                            at the depth of the near plane, and a point at
+                            <Math tex={'z = 1'}/> is exactly at the depth of
+                            the far plane.
+                            That is, relative to the camera, a point at <Math
+                                tex={'z = 0.1'}/>
+                            is closer to the camera than a point at <Math
+                                tex={'z = 0.2'}/>.
+
+                            The matrix that performs this transformation is
+                            called the <I>projection matrix</I>.
+                            The projection matrix is named as such because it
+                            projects
+                            points in eye space into NDC space. Note that the
+                            matrix
+                            encompasses two operations: first, the projection of
+                            points on objects
+                            onto the near plane, and second, the projection of
+                            the captured points
+                            on the near plane into NDC space.
+                            With this abstraction for representing captured
+                            coordinates,
+                            the programmer is not only able to standardize the
+                            representation of a scene regardless of monitor
+                            size,
+                            but also embed key information
+                            about the depth of each point in the scene.
+                            The NDC space thus provides a comprehensive
+                            representation
+                            that allows any GPU to interpret and display the
+                            same scene,
+                            and with correct front-to-back ordering as well.
+                        </Paragraph>
+
+                        <Paragraph size={3}>NDC space</Paragraph>
+                        <Spacer/>
+                        <Paragraph>
+                            First, objects in the scene are projected onto
+                            the near plane.
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>The projected x and y coordinates
+                            are tackled first.
+                            Recall that the camera points down the negative
+                            z-axis in eye space.
+                            Let:
+                            <Math displayMode={true} tex={'\\begin{align*}' +
+                                'p_e &=  (x_e, y_e, z_e, w_e) \\\\' +
+                                'p_p &=  (x_p, y_p, z_p, w_p) \\\\' +
+                                'p_n &=  (x_n, y_n, z_n, w_n) \\\\' +
+                                '\\end{align*}'}/>
+                            where <Math tex={'p_e'}/> is the point in eye
+                            space, {' '}
+                            <Math tex={'p_p'}/> is the projected point on the
+                            near plane, and
+                            <Math tex={'p_n'}/> is the point in NDC space.
+                            Let the near plane be at <Math
+                                tex={'z = -n, n > 0'}/> and the far plane be
+                            at {' '}
+                            <Math tex={'z = -f, f > n > 0'}/>.
+                            Let <Math tex={'t, b, l, r'}/> represent the top,
+                            bottom, left and right edges of the near plane,
+                            respectively.
+                            By the ratio of similar triangles,
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      '\\frac{y_p}{y_e} &= \\frac{-n}{z_e}\\' +
+                                      '\\∴  y_p &= \\frac{n \\cdot y_e}{-z_e} \\tag{1}' +
+                                      '\\end{align*}'}/>
+
+                            Similarly,
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      '\\frac{x_p}{x_e} &= \\frac{-n}{z_e}\\' +
+                                      '\\∴  x_p &= \\frac{n \\cdot x_e}{-z_e} \\tag{2}' +
+                                      '\\end{align*}'}/>
+
+                            Next, the formula to transform <Math tex={'p_p'}/>
+                            into its corresponding location in NDC space is
+                            considered.
+                            Vulkan states that, in NDC space, <Math
+                                tex={'y = -1'}/> is
+                            the top edge of the surface. This implies that <Math
+                                tex={'t'}/>
+                            should be mapped to <Math tex={'y = -1'}/>.
+                            Therefore, <Math tex={'b'}/> should be mapped
+                            to <Math tex={'y = 1'}/>.
+                            This is a linear mapping problem where the mapping
+                            function
+                            is of the form <Math
+                                tex={'y_n = My_p + B'}/>, where <Math
+                                tex={'M'}/> is
+                            the
+                            gradient and <Math tex={'B'}/> is the intercept.
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      'M &= \\frac{1 - (-1)}{b-t} \\\\' +
+                                      '&= \\frac{2}{b-t} \\\\' +
+                                      '\\end{align*}'
+                                  }/>
 
 
-                <Card>
-                    <Paragraph size={2}>About this article</Paragraph>
-                    <Spacer size={5}/>
-                    <Paragraph>This article is meant for:
-                    </Paragraph>
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      'y_n = \\frac{2}{b-t} \\cdot y_p + B \\\\' +
+                                      '\\end{align*}'}/>
+                            Substituting the point <Math tex={'(b, 1)'}/>,
+                            <Math displayMode={true}
+                                  tex={
+                                      '\\begin{align*}' +
+                                      '1 &= \\frac{2}{b-t} \\cdot b  + B \\\\' +
+                                      'B &= 1 - \\frac{2b}{b-t} \\\\' +
+                                      '&= \\frac{b-t-2b}{b-t} \\\\' +
+                                      '&= \\frac{-b-t}{b-t} \\\\' +
+                                      '&= -\\frac{b+t}{b-t} \\\\' +
+                                      '&= \\frac{b+t}{t-b} \\\\' +
+                                      '\\end{align*}'
+                                  }/>
 
-                    <List>
-                        <span>users who have a
-                        level of understanding of graphics programming</span>
-                        <span>have past experience with abstracted specifications
-                        like OpenGL and want to see how similar concepts
-                        appear in Vulkan</span>
-                        <span>those who need deep renderer customisation,
-                            and so want a conceptual understanding of the Vulkan rendering model</span>
-                        <span>those who want to understand how Vulkan is structured,
-                            so looking up documentation and features to achieve what they want is easier</span>
-                    </List>
-                    <Spacer size={5}/>
+                            <Math displayMode={true}
+                                  tex={'∴ y_n = \\frac{2}{b-t} \\cdot y_p + \\frac{b+t}{t-b} \\tag{3}'}
+                            />
 
-                    <Paragraph>This article will:</Paragraph>
-                    <List>
-                        <span>discuss each step of the journey from a user-defined
-                            3D coordinate space to the eventual screen render</span>
-                        <span>note the pitfalls and gotchas hidden deep in the specification</span>
-                        <span>convince the reader of the fundamental Vulkan model
-                            with illustrations and reference to documentation</span>
-                    </List>
+                            Similarly, <Math tex={'x_n = Mx_p + B'}/>.
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      'M &= \\frac{1-(-1)}{r-l} \\\\' +
+                                      '&= \\frac{2}{r-l} \\\\' +
+                                      '' +
+                                      '\\end{align*}'}/>
 
-                    <Spacer/>
-                    <Paragraph>As a general description of the level of
-                        understanding expected,
-                        the following terms should make some sort of sense,
-                        or ring some sort of bell in the reader. If the terms
-                        mentioned are at least recognisable, it's probably good
-                        enough.</Paragraph>
-                    <Spacer/>
+                            <Math displayMode={true}
+                                  tex={'x_n = \\frac{2}{r-l} \\cdot x_p + \\frac{r+l}{l-r}'}/>
 
-                    <List>
-                        <span><I>shader, binding, layout</I></span>
-                        <span><I>framebuffer, attachment</I></span>
-                        <span><I>NDC, pipeline, viewport</I></span>
-                    </List>
-                </Card>
+                            Substituting the point <Math tex={'(r, 1)'}/>,
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      '1 &= \\frac{2}{r-l} \\cdot r + B \\\\' +
+                                      'B &= 1-\\frac{2r}{r-l} \\\\' +
+                                      '&= \\frac{r-l-2r}{r-l} \\\\' +
+                                      '&= \\frac{-r-l}{r-l} \\\\' +
+                                      '&= -\\frac{r+l}{r-l} \\\\' +
+                                      '&= \\frac{r+l}{l-r} \\\\' +
+                                      '\\end{align*}'}/>
 
+                            <Math displayMode={true}
+                                  tex={'∴ x_n = \\frac{2}{r-l} \\cdot x_p + \\frac{r+l}{l-r} \\tag{4}'}
+                            />
 
-                <Card>
-                    <Paragraph size={2}>The issue</Paragraph>
-                    <Spacer size={2}/>
-                    <Paragraph>
-                        Suppose the input is a user-defined, arbitrary 3D
-                        world:</Paragraph>
-                    <Spacer size={2}/>
-                    <SvgContainer SvgComponent={IsometricScene}
-                                  style={{width: '70%'}}/>
+                            Combining equations 1 and 3, the function
+                            mapping {' '}
+                            <Math tex={'y_e'}/> to <Math
+                                tex={'y_p'}/> is
+                            obtained.
 
-                    <Spacer size={2}/>
-                    <Paragraph>...and the output is the corresponding render
-                        from the point of view of the camera.</Paragraph>
-                    <Spacer size={2}/>
-                    <SvgContainer SvgComponent={ScreenView}
-                                  style={{width: '70%'}}/>
+                            <Math displayMode={true}
+                                  tex={'y_n = \\frac{2}{b-t} \\frac{n \\cdot y_e}{-z_e} + \\frac{b+t}{t-b} \\tag{5}'}/>
 
-                    <Spacer size={2}/>
-                </Card>
+                            Similarly, combining equations 2 and 4, the function
+                            <Math tex={'x_e'}/> to <Math tex={'x_p'}/> is
+                            obtained.
 
-                <Card>
-                    <Paragraph size={2}>About graphics in Vulkan</Paragraph>
-                    <Spacer size={2}/>
-                    <Paragraph><B>Vulkan</B> is a low-level graphics
-                        API that provides more control to the programmer
-                        than older, higher-level APIs like OpenGL or DirectX 11.
-                    </Paragraph>
-                    <Spacer size={5}/>
-                    <Paragraph>The Vulkan model is extremely explicit.
-                        OpenGL is to Vulkan as C is to assembly.
-                        That is not to say that writing Vulkan will look like
-                        writing assembly; the comparison is intended to give
-                        the reader an intuition regarding the drop in the level
-                        of abstraction.
-                    </Paragraph>
-                    <Spacer size/>
-                    <Paragraph>One of the most important things the Vulkan
-                        specification
-                        offers is an interface for the programmer to create
-                        resources on / configure the operation of GPUs in a
-                        manufacturer-agnostic manner.
-                    </Paragraph>
-                    <Spacer/>
+                            <Math displayMode={true}
+                                  tex={'x_n = \\frac{2}{r-l} \\frac{n \\cdot x_e}{-z_e} + \\frac{r+l}{l-r} \\tag{6}'}/>
 
-                    <Paragraph size={3}>The Vulkan pattern</Paragraph>
-                    <Spacer size={3}/>
-                    <Paragraph>There is a singular, most common pattern that
-                        appears when using Vulkan to manage GPU resources. This
-                        section briefly
-                        describes that pattern.</Paragraph>
-                    <Spacer/>
+                            At this junction the form of the projection matrix
+                            is considered.
+                            Let the 4x4 projection matrix be
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix}' +
+                                      'x_p \\\\' +
+                                      'y_p \\\\' +
+                                      'z_p \\\\' +
+                                      'w_p \\end{bmatrix}' +
+                                      '=' +
+                                      '\\begin{bmatrix}' +
+                                      'm_{00} & m_{01} & m_{02} & m_{03} \\\\' +
+                                      'm_{10} & m_{11} & m_{12} & m_{13} \\\\' +
+                                      'm_{20} & m_{21} & m_{22} & m_{23} \\\\' +
+                                      'm_{30} & m_{31} & m_{32} & m_{33} \\\\' +
+                                      '\\end{bmatrix}' +
+                                      '\\begin{bmatrix}' +
+                                      'x_e \\\\' +
+                                      'y_e \\\\' +
+                                      'z_e \\\\' +
+                                      'w_e \\\\' +
+                                      '\\end{bmatrix}'
+                                  }
+                            />
 
-                    <Paragraph>
-                        For the example, we suppose the user wants to create a
-                        buffer in
-                        GPU memory.
-                    </Paragraph>
-                    <Spacer/>
+                            Immediately an issue is apparent: <Math
+                                tex='m_{00}'/> {' '}
+                            needs to be <Math displayMode={true}
+                                              tex={'\\frac{2n}{(r-l){(-z_e)}}'}/>
 
-                    <Paragraph size={4}>Creating resources</Paragraph>
-                    <Spacer size={4}/>
-                    <Paragraph>Resources are represented
-                        by opaque <CT>Vk*</CT> handles that
-                        hide
-                        the internal state of
-                        Vulkan objects. The handle for a buffer
-                        is <CT>VkBuffer</CT>.
-                    </Paragraph>
-                    <Spacer/>
+                            However, there is no way of introducing a term
+                            into <Math tex={'P'}/> that performs the required
+                            division operation. An identical issue arises
+                            when deriving <Math tex={'m_{10}'}/> for the
+                            conversion of <Math tex={'y_e'}/> to <Math
+                                tex={'y_p'}/>: <Math tex={'m_{10}'}/> needs to
+                            be
+                            <Math displayMode={true}
+                                  tex={'\\frac{2n}{(b-t){(-z_e)}}'}
+                            />
 
-                    <Paragraph>To <I>create</I> resources, a Vulkan command
-                        needs
-                        to be called. All such commands are of the
-                        form <CT>vkCreate*</CT>.
-                        The command to create
-                        a <CT>VkBuffer</CT> is <CF>vkCreateBuffer.</CF></Paragraph>
-                    <Spacer/>
+                            Note that during the transformation of both
+                            x and y terms, division by the same factor <Math
+                                tex={'-z_e'}/>
+                            is required.
 
-                    <Paragraph>When calling creation commands, virtually
-                        always, a <CT>Vk*CreateInfo</CT> structure needs to be
-                        set up. As demonstrated below, the creation of
-                        a <CT>VkBuffer</CT> requires
-                        a <CT>VkBufferCreateInfo</CT>.
-                    </Paragraph>
-                    <Spacer/>
+                            The issue is resolved by introducing an intermediate
+                            coordinate space, called <I>clip space</I>. Clip
+                            space is
+                            an abstract space that sits between eye space and
+                            NDC space. The way clip space resolves the issue is
+                            by allowing the division by <Math tex={'z_e'}/> to
+                            be deferred to a later step called <I>perspective
+                                division</I>.
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
+                            First, the coordinates are transformed from eye
+                            space
+                            to clip space. Then, the coordinates in clip space
+                            undergo
+                            perspective division, becoming NDC.
 
-                    <Paragraph>Creation commands will also always ask the
-                        programmer for a pointer to a handle
-                        (here <CT>VkBuffer</CT>) in which the newly created
-                        resource's
-                        location is stored. This handle is the primary way in
-                        which
-                        programmers interact with resources after creation.
-                    </Paragraph>
-                    <Spacer/>
+                            In fact, the perspective division step is so
+                            universally
+                            performed that Vulkan performs this step implicitly
+                            for
+                            the programmer. As per the specification, for clip
+                            space coordinates
+                            <Math tex={'(x_c, y_c, z_c, w_c)'}/>, Vulkan will
+                            automatically perform perspective division to
+                            obtain NDC:
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      'x_n = \\frac{x_c}{w_c} \\\\' +
+                                      'y_n = \\frac{y_c}{w_c} \\\\' +
+                                      'z_n = \\frac{z_c}{w_c} \\\\' +
+                                      '\\end{align*}'}/>
 
-                    <Code>
-                        <CodeLine><CT>VkResult</CT> <CF>vkCreateBuffer</CF>
-                            (</CodeLine>
-                        <CodeLine
-                            indent={1}><CT>VkDevice</CT> device,</CodeLine>
-                        <CodeLine indent={1}><CK>const </CK>
-                            <CT>VkBufferCreateInfo*</CT> pCreateInfo,</CodeLine>
-                        <CodeLine indent={1}><CK>const </CK>
-                            <CT>VkAllocationCallbacks*</CT> pAllocator,</CodeLine>
-                        <CodeLine
-                            indent={1}><CT>VkBuffer*</CT> pBuffer);</CodeLine>
-                    </Code>
-                    <Spacer/>
+                            With this intermediate space defined, let the 4x4
+                            projection matrix be <Math tex={'P'}/>, such that
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix}' +
+                                      'x_c \\\\' +
+                                      'y_c \\\\' +
+                                      'z_c \\\\' +
+                                      'w_c \\\\' +
+                                      '\\end{bmatrix}' +
+                                      ' = ' +
+                                      '\\begin{bmatrix}' +
+                                      'm_{00} & m_{01} & m_{02} & m_{03} \\\\' +
+                                      'm_{10} & m_{11} & m_{12} & m_{13} \\\\' +
+                                      'm_{20} & m_{21} & m_{22} & m_{23} \\\\' +
+                                      'm_{30} & m_{31} & m_{32} & m_{33} \\\\' +
+                                      '\\end{bmatrix}' +
+                                      '\\begin{bmatrix}' +
+                                      'x_e \\\\' +
+                                      'y_e \\\\' +
+                                      'z_e \\\\' +
+                                      'w_e \\\\' +
+                                      '\\end{bmatrix}'
+                                  }/>
 
-                    <Paragraph size={4}>About create infos</Paragraph>
-                    <Spacer size={4}/>
-                    <Paragraph>Note that the <CN>pCreateInfo</CN> variable is a
-                        pointer.
-                        This implies that for this function call to work, there
-                        needs to be a <CT>VkBufferCreateInfo</CT> variable in
-                        scope. Note that after the creation command is called,
-                        the "create info" variables can be destroyed
-                        freely.</Paragraph>
-                    <Spacer/>
-
-                    <Paragraph>While the
-                        fields for <CT>Vk*CreateInfo</CT> structs need
-                        vary from struct to struct, they invariably have
-                        an <CT>sType</CT> field.
-                        This field is used by Vulkan to identify the type of the
-                        structure.
-                    </Paragraph>
-                    <Spacer/>
-                    <Paragraph>Without the correct <CT>sType</CT>, the function
-                        call will fail. Discovering the correct value for the
-                        field is easy, however. The documentation always
-                        mentions
-                        the required value for the <CT>sType</CT> field.
-
-                        For <CT>VkBufferCreateInfo</CT>,
-                        the <TextLink
-                            link="https://docs.vulkan.org/spec/latest/chapters/resources.html#VUID-VkBufferCreateInfo-sType-sType">
-                            documentation</TextLink>
-                        {' '} states
-                        the following:
-                    </Paragraph>
-                    <Spacer/>
-                    <Code>
-                        <CodeLine>
-                            VUID-VkBufferCreateInfo-sType-sType
-                        </CodeLine>
-
-                        <CodeLine>
-                            sType must be
-                            VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO
-                        </CodeLine>
-                    </Code>
-                    <Spacer/>
-
-                    <Paragraph size={4}>Destroying resources</Paragraph>
-                    <Spacer size={4}/>
-                    <Paragraph>Finally, <I>initiation</I> of object cleanup is
-                        manual. Even
-                        though the API facilitates the allocation of resources,
-                        it does not manage the resources' lifetime. To destroy
-                        objects, call the
-                        corresponding <CF>vkDestroy*</CF> method. Only then
-                        will Vulkan free the resource.
-
-                        For <CT>VkBuffer</CT>, the command
-                        is <CF>vkDestroyBuffer</CF>.
-                    </Paragraph>
-                    <Spacer/>
-                    <Code>
-                        <CodeLine><CT>void </CT>
-                            <CF>vkDestroyBuffer</CF>(</CodeLine>
-                        <CodeLine
-                            indent={1}><CT>VkDevice</CT> device,</CodeLine>
-                        <CodeLine
-                            indent={1}><CT>VkBuffer</CT> buffer,</CodeLine>
-                        <CodeLine indent={1}><CK>const </CK>
-                            <CT>VkAllocationCallbacks*</CT> pAllocator);</CodeLine>
-                    </Code>
-
-                    <Spacer/>
-                    <Paragraph>The handle obtained during creation is passed
-                        to the destroy command.</Paragraph>
-
-                    <Spacer/>
-                    <Paragraph size={4}>Summary</Paragraph>
-                    <Spacer size={4}/>
-                    <Paragraph>Considering all of the above, an excerpt of
-                        resource creation is provided below. This pattern is
-                        general and ubiquitous in Vulkan.
-                    </Paragraph>
-                    <Spacer/>
-                    <Code>
-                        <CodeLine><CT>VkBufferCreateInfo</CT> {'info {'} <CC>//
-                            structured
-                            binding declaration</CC>
-                        </CodeLine>
-                        <CodeLine indent={1}><CT>.sType</CT> =
-                            VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,</CodeLine>
-                        <CodeLine indent={1}>...</CodeLine>
-                        <CodeLine>{'};'}</CodeLine>
-                        <br/>
-                        <CodeLine><CT>VkBuffer</CT> {'buffer{VK_NULL_HANDLE}'};</CodeLine>
-                        <CodeLine>{'if ('}<CF>vkCreateBuffer</CF>{'(..., &info, ..., &buffer) ' +
-                            '!= VK_SUCCESS) {'}
-                        </CodeLine>
-                        <CodeLine indent={1}><CC>// enter here if Vulkan tells
-                            us it failed</CC></CodeLine>
-                        <CodeLine
-                            indent={1}><CK>throw </CK><CF>std::runtime_error</CF>{'("failed to create buffer");'}
-                        </CodeLine>
-                        <CodeLine>{'}'}</CodeLine>
-                        <br/>
-                        <CodeLine><CC>// pass buffer handle around, do
-                            whatever </CC></CodeLine>
-
-                        <br/>
-                        <CodeLine><CF>vkDestroyBuffer</CF>{'(..., buffer, ...);'}
-                        </CodeLine>
-                    </Code>
-
-                </Card>
-
-                <Card>
-                    <Paragraph size={2}>Conceptual overview</Paragraph>
-                    <Spacer size={2}/>
-                    <Paragraph>Vulkan achieves the titular goal through the
-                        interoperation
-                        of its many objects. Obviously the programmer must
-                        assemble the graphics pipeline, but they must also
-                        manually put together everything else, like the render
-                        passes that use the pipeline, or the buffers to
-                        back texture images.
-                    </Paragraph>
-
-                    <Spacer/>
-                    <Paragraph>The general steps needed to be taken are as
-                        follows:
-                    </Paragraph>
-                    <Spacer size={3}/>
-
-                    <Paragraph size={3}>1. Initialise Vulkan</Paragraph>
-                    <Spacer/>
-                    <Paragraph>The first step is to prepare fundamental objects.
-                        These are the <I>physical device</I> and the <I>logical
-                            device</I>.
-                    </Paragraph>
-                    <Spacer/>
-                    <Paragraph>The physical device can be thought of as a
-                        Vulkan-capable GPU on the system.
-                        It is represented by
-                        the <CT>VkPhysicalDevice</CT> handle.
-                        The programmer needs to query the
-                        system
-                        for available devices and choose one to use.
-                        Furthermore,
-                        the physical device needs to be verified to see if it
-                        supports features the Vulkan application being built
-                        intends to use (e.g., anti-aliasing).</Paragraph>
-                    <Spacer/>
-                    <Paragraph>The logical device can be though of as a
-                        connection to the physical device. It is represented by
-                        the <CT>VkDevice</CT> handle. It is through
-                        the logical device that the physical device is
-                        interfaced with.</Paragraph>
-
-                    <Paragraph>By initialising Vulkan, the user ensures that the
-                        application is ready to use the selected GPU.
-                    </Paragraph>
-                    <Spacer size={3}/>
+                            <Math tex={'w_c'}/> must equal <Math tex={'z_e'}/>,
+                            therefore
+                            the last row of <Math tex={'P'}/> can be filled in:
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix}' +
+                                      'x_c \\\\' +
+                                      'y_c \\\\' +
+                                      'z_c \\\\' +
+                                      'w_c \\\\' +
+                                      '\\end{bmatrix}' +
+                                      ' = ' +
+                                      '\\begin{bmatrix}' +
+                                      'm_{00} & m_{01} & m_{02} & m_{03} \\\\' +
+                                      'm_{10} & m_{11} & m_{12} & m_{13} \\\\' +
+                                      'm_{20} & m_{21} & m_{22} & m_{23} \\\\' +
+                                      '0 & 0 & -1 & 0 \\\\' +
+                                      '\\end{bmatrix}' +
+                                      '\\begin{bmatrix}' +
+                                      'x_e \\\\' +
+                                      'y_e \\\\' +
+                                      'z_e \\\\' +
+                                      'w_e \\\\' +
+                                      '\\end{bmatrix}'
+                                  }/>
 
 
-                    <Paragraph size={3}>2. Obtain a drawing surface from the
-                        operating system</Paragraph>
-                    <Spacer/>
-                    <Paragraph>Vulkan needs a surface to draw to. A surface can
-                        be understood
-                        as some window on the screen. This surface is created by
-                        the operating system, then given to Vulkan to use.
-                        The Vulkan object that represents this surface
-                        is <TextLink
-                            link='https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#_wsi_surface'
-                            popupMessage='From the documentation:
-                            "Native platform surface or window objects are abstracted by surface objects,
-                            which are represented by VkSurfaceKHR handles."'><CT>VkSurfaceKHR</CT></TextLink>.
-                    </Paragraph>
-                    <Spacer size={3}/>
+                            Now, reconsidering equation 5:
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*} y_n = \\frac{y_c}{w_c} &= ' +
+                                      '\\frac{2}{b-t} \\frac{n \\cdot y_e}{-z_e} + \\frac{b+t}{t-b} \\\\' +
+                                      'y_c &= \\frac{2n}{b-t} \\cdot y_e + \\frac{b+t}{t-b} \\cdot (-z_e)' +
+                                      '\\end{align*}'
+                                  }/>
+                            and equation 6:
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*} x_n = \\frac{x_c}{w_c} &= ' +
+                                      '\\frac{2}{r-l} \\frac{n \\cdot x_e}{-z_e} + \\frac{r+l}{l-r} \\\\' +
+                                      'x_c &= \\frac{2n}{r-l} \\cdot x_e + \\frac{r+l}{l-r} \\cdot (-z_e)' +
+                                      '\\end{align*}'
+                                  }/>
 
-                    <Paragraph size={3}>3. Create a swapchain</Paragraph>
-                    <Spacer/>
-                    <Paragraph>A swapchain is the Vulkan term for a set of
-                        virtual framebuffers.
-                        The swapchain handle is <CT>VkSwapchainKHR</CT>.
-                        It is the swapchain that facilitates double-buffering.
-                    </Paragraph>
-                    <Spacer/>
+                            Now, the first two rows of <Math tex={'P'}/> can
+                            also be determined.
 
-                    <Paragraph>Regardless of the whether double-buffering is
-                        actually performed, the swapchain encapsulates a list
-                        of images (pixel buffers) bound to the surface.
-                        Formally, an image in vulkan is a <CT>VkImage</CT>.
-                    </Paragraph>
-                    <Spacer size={3}/>
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix}' +
+                                      'x_c \\\\' +
+                                      'y_c \\\\' +
+                                      'z_c \\\\' +
+                                      'w_c \\\\' +
+                                      '\\end{bmatrix}' +
+                                      ' = ' +
+                                      '\\begin{bmatrix}' +
+                                      '\\frac{2n}{r-l} & 0 & \\frac{r+l}{l-r} & 0 \\\\' +
+                                      '0 & \\frac{2n}{(b-t)} & \\frac{b+t}{t-b} & 0 \\\\' +
+                                      'm_{20} & m_{21} & m_{22} & m_{23} \\\\' +
+                                      '0 & 0 & -1 & 0 \\\\' +
+                                      '\\end{bmatrix}' +
+                                      '\\begin{bmatrix}' +
+                                      'x_e \\\\' +
+                                      'y_e \\\\' +
+                                      'z_e \\\\' +
+                                      'w_e \\\\' +
+                                      '\\end{bmatrix}'
+                                  }/>
 
-                    <Paragraph size={3}>4. Set up the graphics
-                        pipeline</Paragraph>
-                    <Spacer/>
-                    <Paragraph>This is the most expansive and involved part of a
-                        basic Vulkan application.
-                        The programmer must manually set up the graphics
-                        pipeline and prepare data structures the pipeline will
-                        process. </Paragraph>
-                    <Spacer/>
-                    <Paragraph>The end product of this stage is a pipeline
-                        object
-                        that can be used to transform data in the pre-defined 3D
-                        coordinate
-                        system into screen coordinates. The derivation of the
-                        entire pipeline
-                        is the primary focus of this article and is discussed
-                        later. The pipeline object
-                        is <CT>VkPipeline</CT>.</Paragraph>
+                            The final problem to tackle is the transformation
+                            from <Math tex={'z_e'}/> to <Math tex={'z_c'}/>.
 
-                    <Spacer size={3}/>
-                    <Paragraph size={3}>5. Use all the assembled resources to
-                        draw to the screen
-                    </Paragraph>
-                    <Spacer/>
-                    <Paragraph>A reasonably involved step as well, once the
-                        pipeline is used it must be utilised in a <I>render
-                            pass</I>.
-                        A render pass coordinates all the resources
-                        created and configured in the prior steps to draw to the
-                        screen. The render pass object
-                        is <CT>VkRenderPass</CT>.
-                    </Paragraph>
+                            Interestingly, the previous approach for finding the
+                            mapping functions for x and y don't work for z. The
+                            approach first
+                            found <Math tex={'x_p'}/> and <Math tex={'y_p'}/> on
+                            the near plane,
+                            then mapped them to the NDC bounds. Consider the
+                            z-coordinate:
+                            the <Math tex={'z_p = n'}/> in all situations, by
+                            definition.
+
+                            One could attempt to skip the near plane projection
+                            step,
+                            and instead seek a direct linear map from <Math
+                            tex={'z_e'}/> to <Math
+                            tex={'z_n'}/>. <Math
+                            tex={'[n, f] \\rightarrow [0, 1]'}/>, so
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      'z_n = \\frac{z_c}{w_c} &= \\frac{1}{f-n} \\cdot z_e + \\frac{n}{n-f} \\\\' +
+                                      'z_c &= \\frac{1}{f-n} \\cdot -({z_e}^2) + \\frac{n}{n-f} \\cdot {(-z_e)} \\\\' +
+                                      '\\end{align*}'}/>
+                            and the same issue is encountered, where it is
+                            not possible to introduce the <Math tex='{z_e}^2'/>
+                            term into <Math tex='P'/>.
+
+                            An alternative approach is desired. It is known
+                            that <Math tex={'z_c'}/> is dependent on
+                            neither <Math tex={'x_e'}/>
+                            nor <Math tex={'y_e'}/>, thus the third row of <Math
+                            tex={'P'}/> can be expressed
+                            as follows:
+
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix}' +
+                                      'x_c \\\\' +
+                                      'y_c \\\\' +
+                                      'z_c \\\\' +
+                                      'w_c \\\\' +
+                                      '\\end{bmatrix}' +
+                                      ' = ' +
+                                      '\\begin{bmatrix}' +
+                                      '\\frac{2n}{r-l} & 0 & \\frac{r+l}{l-r} & 0 \\\\' +
+                                      '0 & \\frac{2n}{(b-t)} & \\frac{b+t}{t-b} & 0 \\\\' +
+                                      '0 & 0 & A & B \\\\' +
+                                      '0 & 0 & 1 & 0 \\\\' +
+                                      '\\end{bmatrix}' +
+                                      '\\begin{bmatrix}' +
+                                      'x_e \\\\' +
+                                      'y_e \\\\' +
+                                      'z_e \\\\' +
+                                      'w_e \\\\' +
+                                      '\\end{bmatrix}'
+                                  }/>
+
+                            Note that <Math tex={'w_e'}/> is always 1.
+
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*} ' +
+                                      'z_n = \\frac{z_c}{w_c} &= \\frac{A \\cdot z_e + B \\cdot w_e}{w_c} \\\\' +
+                                      'z_n &= \\frac{A \\cdot z_e + B}{-z_e}' +
+                                      '\\end{align*}'}/>
 
 
-                </Card>
+                        </Paragraph>
+                    </Card>
+                </div>
+                <ScrollyTeller
+                    width={textCardWidth}
+                    height={'auto'}
+                    position={{
+                        left: 'calc(50vw + 2rem)',
+                        top: scrollyTellerY + 'px'
+                    }}
+                    animationData={animationData}
+                    marker={currentMarker}/>
             </div>
             <Button route='' linkText='JP'/>
         </div>

@@ -18,11 +18,23 @@ function Articles() {
                         Vulkan</Paragraph>
                     <Spacer size={1}/>
                     <Paragraph>
-                        What does it take for Vulkan to render an arbitrary
-                        representation of a scene to the screen?
-                        A discussion of the practical journey from a
-                        user-defined world representation to colored
+                        What does it take to render an arbitrary
+                        representation of a scene to the screen? In other words,
+                        how do we make computers display things like we see with
+                        our own eyes?
+                        A mathematical discussion of the practical journey from
+                        a user-defined world representation to colored
                         pixels in Vulkan.
+                    </Paragraph>
+                </LinkCard>
+                <LinkCard route='/articles/the-vulkan-model'>
+                    <Paragraph size={2}>The Vulkan model</Paragraph>
+                    <Spacer size={1}/>
+                    <Paragraph>
+                        Vulkan is a complex specification. This article
+                        builds a mental model of the way Vulkan operates
+                        with an intuitive explanation supplemented with
+                        illustrations.
                     </Paragraph>
                 </LinkCard>
             </div>

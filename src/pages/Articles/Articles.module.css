@@ -12,6 +12,7 @@
 
 .content {
     display: flex;
+    gap: 4rem;
     flex-direction: column;
     width: 100%;
     max-width: 45%;
