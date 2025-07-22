@@ -6,8 +6,8 @@ import Paragraph from "@components/Paragraph/Paragraph.jsx";
 function SubCard({title, children}) {
     return (
         <div className={styles.subcard}>
-            <Paragraph size={3} variant="bold">{title}</Paragraph>
-            <Paragraph size={3}>{children}</Paragraph>
+            {title && <Paragraph size={3} variant="bold">{title}</Paragraph>}
+            {children}
         </div>
     );
 }

@@ -7,9 +7,12 @@ import Spacer from "@components/Spacer/Spacer.jsx";
 import Paragraph from "@components/Paragraph/Paragraph.jsx";
 import ScrollyTeller from "@components/ScrollyTeller/ScrollyTeller.jsx";
 import animationData from '@animations/scene-to-screen.json'
-import {B, I} from "@util/typography.jsx";
+import {B, C, CF, CN, CT, I} from "@util/typography.jsx";
 import Math from '@components/Math/Math.jsx'
 import List from "@components/List/List.jsx";
+import TextLink from "@components/TextLink/TextLink.jsx";
+import Code from "@components/Code/Code.jsx";
+import SubCard from "@components/SubCard/SubCard.jsx";
 
 function SceneToScreen() {
     let firstTextCardRef = useRef(null);
@@ -302,7 +305,7 @@ function SceneToScreen() {
                             directly in front of themselves. In practice,
                             small deviations (such as the fact that the assumed
                             distance {' '}
-                            <Math tex={'o'}/> from the monitor is not precisely
+                            <Math tex={'n'}/> from the monitor is not precisely
                             accurate)
                             break the illusion, but this is not of any concern.
                             After all, there is no expectation for images
@@ -335,13 +338,12 @@ function SceneToScreen() {
                             on the near
                             plane. Since the near plane maps directly onto the
                             screen, there is no issue when displaying the
-                            captured
-                            damage as an image on the monitor either.
+                            captured image on the monitor either.
                         </Paragraph>
                         <Spacer size={3}/>
 
                         <Paragraph size={3}>
-                            Eye space
+                            View matrix
                         </Paragraph>
                         <Spacer/>
 
@@ -351,6 +353,10 @@ function SceneToScreen() {
                             object,
                             the near plane is also slanted.
 
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
                             Recall that all the items being discussed are
                             3-dimensional.
 
@@ -365,13 +371,21 @@ function SceneToScreen() {
                             understandable and easy to program for: illuminate
                             the
                             pixel at <Math
-                                tex={'(500, 1000)'}/> on the monitor.
+                            tex={'(500, 1000)'}/> on the monitor.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
                             However, since the near plane is at an
                             angle, captured coordinates look more like <Math
-                                tex={'(273.54, 1728.23, 3.73)'}/>; what's worse
+                            tex={'(273.54, 1728.23, 3.73)'}/>; what's worse
                             is that
                             the z-coordinate varies across the capturing
                             surface.
+
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             The solution is to, regardless of the position
                             of the camera when capturing a scene, convert the
                             entire
@@ -393,7 +407,12 @@ function SceneToScreen() {
                             the system back into the ideal position, essentially
                             undoing all the
                             changes made by the programmer when positioning the
-                            camera. Of course, a coordinate frame change does
+                            camera.
+
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>Of course, a coordinate frame
+                            change does
                             not affect the
                             relative position of any objects in the scene,
                             therefore the
@@ -427,6 +446,10 @@ function SceneToScreen() {
                             such that everything is relative to this "eye" at
                             the origin.
 
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
                             It is important to remember that coordinate system
                             changes don't involve the movement of any objects in
                             the
@@ -434,50 +457,64 @@ function SceneToScreen() {
                             Rather, the only thing that changes is the
                             coordinate representation of each object.
                             The origin of the world is moving.
-
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             Let the view matrix be <Math tex={'V'}/>.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
                             The positioned camera has a location and a rotation.
                             Therefore, <Math tex={'V'}/> is derived from two
                             matrix components:
                             one to correct the location of the camera <Math
-                                tex={'V_l'}/>, and one to
+                            tex={'V_l'}/>, and one to
                             correct the rotation <Math tex={'V_r'}/>.
+
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
                             First, the location is considered. The camera needs
-                            to be
-                            at <Math tex={'(0, 0)'}/>.
+                            to be at <Math tex={'(0, 0)'}/>.
 
                             Let the world coordinates of the camera be <Math
-                                tex={'c_w = (c_{x_w}, c_{y_w}, c_{z_w}, c_{w_w})'}/>.
-                            Let
+                            tex={'w'}/> and
                             the eye coordinates of the camera be <Math
-                                tex={'c_e = (c_{x_e}, c_{y_e}, c_{z_e}, c_{w_e}) = (0, 0, 0, 1)'}/>.
+                            tex={'e  = (0, 0, 0, 1)'}/>.
 
                             <Math displayMode={true}
                                   tex={'\\begin{bmatrix} 0 \\\\ 0 \\\\ 0 \\\\ 1 \\end{bmatrix} = V_l' +
-                                      '\\begin{bmatrix} x_w \\\\ y_w \\\\ z_w \\\\ w_w \\end{bmatrix}'}/>
+                                      '\\begin{bmatrix} w_x \\\\ w_y \\\\ w_z \\\\ 1 \\end{bmatrix}'}/>
 
                             By observation,
                             <Math displayMode={true}
                                   tex={'V_l = \\begin{bmatrix}' +
-                                      '1 & 0 & 0 & -c_{x_w} \\\\' +
-                                      '0 & 1 & 0 & -c_{y_w} \\\\' +
-                                      '0 & 0 & 1 & -c_{z_w} \\\\' +
+                                      '1 & 0 & 0 & -w_x \\\\' +
+                                      '0 & 1 & 0 & -w_y \\\\' +
+                                      '0 & 0 & 1 & -w_z \\\\' +
                                       '0 & 0 & 0 & 1 \\end{bmatrix}'}/>
 
                             This is commonly interpreted as a translation
                             by {' '}
-                            <Math tex={'(-x_w, -y_w, -z_w)'}/>, but it must once
+                            <Math tex={'(-w_x, -w_y, -w_z)'}/>, but it must once
                             again be stressed that not only is the camera
                             "moving" by this
                             amount, so is every other point in the space.
-
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             Next, the rotation is considered. While the camera
                             is now
                             situated at the origin, it is still pointing in
                             whichever direction
                             it was pointing at before the translation.
 
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
                             By convention, eye space is such that the camera's
                             "forward" vector <Math tex={'f'}/>
                             points in the direction of the negative z-axis. The
@@ -485,11 +522,14 @@ function SceneToScreen() {
                             point in the
                             direction
                             of the y-axis, and the "right" vector <Math
-                                tex={'r'}/> (relative
+                            tex={'r'}/> (relative
                             to the camera's
                             "forward" and "up") will point in the direction of
                             the x-axis.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
                             This is also a simple change of basis
                             transformation;
                             to derive this component of the view matrix, each of
@@ -497,64 +537,85 @@ function SceneToScreen() {
                             3 basis vectors as described above need to be found
                             for the camera (in world coordinates).
 
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
                             The basis vector for the z-axis is tackled first.
                             Let the world coordinates of the point the camera is
                             looking at
-                            be <Math tex={'p'}/>, then the forward vector of the
+                            be <Math tex={'p'}/>; then the forward vector of the
                             camera is <Math
-                                tex={'\\frac{p - c}{\\left|p-c\\right|}'}/>,
+                            tex={'\\frac{p - c}{\\left|p-c\\right|}'}/>,
                             that is, the vector from the camera to the point.
                             However, recall that the goal is to have the camera
                             point down the negative z-axis. This implies that
                             points in front of the camera in world space should
-                            end up being expressed with a negative z-coordinate.
+                            end up being expressed with a negative z-coordinate
+                            in eye space.
 
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             If <Math tex={'f'}/> is used as the z-axis basis
                             vector
                             as is, points in front of the camera in world space
-                            will end up with positive z-coordinates in eye
-                            space.
-                            This is because points in front have a z-coordinate
-                            that is a positive scalar multiple of the forward
-                            vector.
+                            will end up with positive z-coordinates instead.
 
+                            This is because points in front of the camera
+                            in world space have a z-coordinate
+                            that is a positive scalar multiple of <Math
+                            tex={'f'}/>.
                             To remedy this issue, the forward vector will be
                             negated when
                             used as the basis vector.
 
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             The basis vector for the x-axis is calculated next.
-                            The up vector is used for this calculation. It
-                            should be noted
-                            that the up vector is provided by the programmer;
-                            without the
+                            A provisional up vector <Math tex={'u\''}/> is used
+                            for this calculation. It
+                            should be noted that this up vector is provided by
+                            the programmer
+                            and is not the one used as the y-axis basis vector.
+                            Without this programmer-provided
                             up vector, even if the forward vector is specified,
-                            the orientation
-                            of the camera is undefined. <B>It is assumed that
-                                the provided
-                                up vector is also normalized</B>.
+                            the orientation of the camera is undefined. <B>It is
+                            assumed that
+                            the provided up vector is also normalized</B>.
 
-                            <Math tex={'u'}/> and <Math tex={'f'}/> define a
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            <Math tex={'u\''}/> and <Math tex={'f'}/> define a
                             plane, therefore <Math
-                                tex={'f \\times u'}/> gives <Math
-                                tex={'r'}/> {' '}
+                            tex={'f \\times u\' = r'}/> {' '}
                             without issue. It is for this
-                            reason that the
-                            specification of the up vector
+                            reason that the specification of the provisional
+                            vector
                             does not need to be absolutely precise: it just
-                            needs to
-                            be able to define a unique plane with <Math
-                                tex={'f'}/>
+                            needs to be able to define a unique plane with <Math
+                            tex={'f'}/> to orient the camera in space.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
                             Note that the obtained <Math tex={'r'}/> is
-                            also guaranteed to be normalized.
+                            also guaranteed to be normalized as a cross product
+                            of 2 normalized vectors.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
                             Finally, the basis vector for the y-axis is derived.
-                            The provided up vector cannot be used as-is, as it
+                            <Math tex={'u\''}/> cannot be used as-is, as it
                             may not be precisely orthonormal to either <Math
-                                tex={'u'}/> or <Math tex={'r'}/>. A "true
-                            up" <Math tex={'u\''}/> is needed.
+                            tex={'f'}/> or <Math tex={'r'}/>. The "true
+                            up" <Math tex={'u'}/> is needed.
                             Fortunately, this is straightforward: <Math
-                                tex={'u\' = r \\times f'}/>
+                            tex={'u = r \\times f'}/>.
 
                             <Math displayMode={true}
                                   tex={'V_r = \\begin{bmatrix}' +
@@ -566,7 +627,7 @@ function SceneToScreen() {
                             Finally, the view matrix may be assembled.
                             The order of operations is important: for a point in
                             world space <Math
-                                tex={'p'}/>,
+                            tex={'p'}/>,
                             first the point must be translated before the
                             rotation is corrected i.e.,
                             <Math displayMode={true}
@@ -578,14 +639,14 @@ function SceneToScreen() {
                                       'r_z & u_z & -f_z & 0\\\\' +
                                       '0 & 0 & 0 & 1 \\end{bmatrix}' +
                                       '\\begin{bmatrix}' +
-                                      '1 & 0 & 0 & -c_{x_w} \\\\' +
-                                      '0 & 1 & 0 & -c_{y_w} \\\\' +
-                                      '0 & 0 & 1 & -c_{z_w} \\\\' +
+                                      '1 & 0 & 0 & -w_x \\\\' +
+                                      '0 & 1 & 0 & -w_y \\\\' +
+                                      '0 & 0 & 1 & -w_z \\\\' +
                                       '0 & 0 & 0 & 1 \\end{bmatrix}p \\\\' +
                                       '&= \\begin{bmatrix}' +
-                                      'r_x & u_x & -f_x & -c_{x_w} \\\\' +
-                                      'r_y & u_y & -f_y & -c_{y_w} \\\\' +
-                                      'r_z & u_z & -f_z & -c_{z_w} \\\\' +
+                                      'r_x & u_x & -f_x & -w_x \\\\' +
+                                      'r_y & u_y & -f_y & -w_y \\\\' +
+                                      'r_z & u_z & -f_z & -w_z \\\\' +
                                       '0 & 0 & 0 & 1 \\end{bmatrix}p' +
                                       '\\end{align*}'
                                   }/>
@@ -602,15 +663,20 @@ function SceneToScreen() {
                         <Paragraph>In the previous section, a system was
                             established such that any camera placed freely
                             in any scene can be converted into a standard
-                            representation
-                            in eye space. From that point onwards, determining
-                            the
-                            corresponding pixels to illuminate on the monitor
-                            should
-                            be a trivial task. However, there are still two
-                            pitfalls that
-                            need to be addressed.
+                            representation in eye space. From that point
+                            onwards, determining
+                            the corresponding pixels to illuminate on the
+                            monitor
+                            should be a trivial task.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
+                            However, there are still
+                            two pitfalls that need to be addressed.
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             First, the near plane was defined to have the exact
                             same dimensions
                             as the user's monitor. This is a convenient
@@ -620,7 +686,10 @@ function SceneToScreen() {
                             the programmer or designer adjusting the camera and
                             placing objects in the
                             scene has no idea of the user's monitor size.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
                             Second, suppose that there are multiple objects
                             in the scene instead of just one as in the example.
                             Lines are projected from each object onto the near
@@ -631,7 +700,6 @@ function SceneToScreen() {
                             that,
                             relative to the camera, one object is in front of
                             the other?
-
                             In this case, there are projected lines from both
                             objects
                             that share the same captured coordinate on the near
@@ -642,10 +710,13 @@ function SceneToScreen() {
                             dimensions,
                             there is no way for the renderer to know this
                             information.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph>
                             To resolve both issues, the concept of <I>normalized
-                                device
-                                coordinates</I> is needed. NDC space is a
+                            device
+                            coordinates</I> is needed. NDC space is a
                             bounded
                             coordinate space
                             defined by the graphics API, and is typically
@@ -654,25 +725,113 @@ function SceneToScreen() {
                             all points in eye space into NDC space, such that
                             all points within the viewing frustum of the camera
                             are within the bounds of the NDC space.
-
                             In essence, NDC space is a 3-dimensional normalized
-                            container of near plane
-                            coordinates. The user's computer is responsible for
-                            mapping
-                            the NDC onto the user's screen in order to find out
+                            container consisting of projected near plane
+                            coordinates.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            The NDC is mapped onto each user's screen on a
+                            monitor-by-monitor
+                            basis to accommodate size differences. in order to
+                            find out
                             which pixels
                             on the user's monitor should be illuminated. This
-                            way,
-                            the responsibility of having to know the target
-                            monitor size is
-                            removed from the people who worked on the scene.
+                            way, the responsibility of having to know the target
+                            monitor size is removed from the people who worked
+                            on the scene.
 
                             For Vulkan, NDC space is a half-cube centred at the
                             origin,
                             where <Math tex={'x \\in [-1, 1]'}/>, <Math
-                                tex={'y \\in [-1, 1]'}/>, <Math
-                                tex={'z \\in [0, 1]'}/>
+                            tex={'y \\in [-1, 1]'}/>, <Math
+                            tex={'z \\in [0, 1]'}/>.
 
+                            From the <TextLink
+                            link={'https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#vertexpostproc-clipping'}
+                        >documentation</TextLink>,
+                        </Paragraph>
+
+                        <SubCard>
+                            <Paragraph>
+                                ...the <I>view volume</I> is defined by:
+
+                                <Math displayMode={true}
+                                      tex={'\\begin{align*}' +
+                                          '-w_c \\leq x_c \\leq w_c \\\\' +
+                                          '-w_c \\leq y_c \\leq w_c \\\\' +
+                                          'z_m \\leq z_c \\leq w_c \\\\' +
+                                          '\\end{align*}'}/>
+
+                                where
+                                if <CF>VkPipelineViewportDepthClipControlCreateInfoEXT</CF>
+                                <br/><C>::negativeOneToOne</C>
+                                {' '}
+                                is <C>VK_TRUE</C> <Math tex={'z_m'}/> is equal
+                                to <Math tex={'-w_c'}/> otherwise <Math
+                                tex={'z_m'}/> is equal to zero.
+                            </Paragraph>
+                        </SubCard>
+
+                        <Paragraph>
+                            The subscript <Math tex={'c'}/> refers to
+                            coordinates in <I>clip space</I>,
+                            which will be discussed later. What is important to
+                            understand now, for the purpose
+                            of the construction of the NDC space, is that clip
+                            space is an intermediary space between world space
+                            and NDC space.
+                        </Paragraph>
+
+                        <Paragraph>
+                            Further down the same page,
+                        </Paragraph>
+                        <SubCard>
+                            <Paragraph>
+                                Perspective division on clip coordinates
+                                yields <I>
+                                normalized device coordinates</I>...
+                                If a vertex in clip coordinates has a position
+                                given
+                                by
+                                <Math displayMode={true}
+                                      tex={'\\begin{bmatrix}' +
+                                          'x_c \\\\' +
+                                          'y_c \\\\' +
+                                          'z_c \\\\' +
+                                          'w_c' +
+                                          '\\end{bmatrix}'}/>
+
+                                then the vertex's normalized device coordinates
+                                are
+                                <Math displayMode={true}
+                                      tex={'\\begin{bmatrix}' +
+                                          'x_d \\\\' +
+                                          'y_d \\\\' +
+                                          'z_d \\end{bmatrix}' +
+                                          '=' +
+                                          '\\begin{bmatrix}' +
+                                          '\\frac{x_c}{w_c} \\\\' +
+                                          '\\frac{y_c}{w_c} \\\\' +
+                                          '\\frac{z_c}{w_c}' +
+                                          '\\end{bmatrix}'}
+                                />
+                            </Paragraph>
+                        </SubCard>
+                        <Spacer size={4}/>
+
+                        <Paragraph>
+                            The implication is as follows: the NDC space is
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      '-1 \\leq x_d \\leq 1 \\\\' +
+                                      '-1 \\leq y_d \\leq 1 \\\\' +
+                                      '0 \\leq z_d \\leq 1' +
+                                      '\\end{align*}'}/>
+                        </Paragraph>
+
+                        <Paragraph>
                             NDC space maps directly into screen (space).
                             But what exactly is the screen? The target surface
                             for the renderer to draw to, to display the
@@ -682,40 +841,137 @@ function SceneToScreen() {
                             It is more likely that there is some fixed region on
                             the monitor
                             where the output image is displayed.
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
                             In fact, before rendering even starts, the Vulkan
                             application obtains a handle to some surface
-                            on the monitor from the operating system. The
-                            surface
-                            can be thought of as the region of pixels on the
-                            monitor
+                            on the monitor from the operating system. This
+                            handle
+                            is <CT>VkSurfaceKHR</CT>, an opaque pointer to
+                            an operating system resource.
+                            The surface can be thought of as the region of
+                            pixels on the monitor
                             the operating system has permitted the application
                             to control. The very browser in which this website
                             is rendered
                             is most certainly part of some similar surface as
                             well.
+                        </Paragraph>
+                        <Spacer/>
 
+                        <Paragraph size={3}>Viewport transformation</Paragraph>
+                        <Paragraph>
+                            A note about the precise way NDC coordinates are
+                            mapped onto the surface. The information in NDC
+                            space is
+                            converted into a set of values and written into a
+                            structure called a framebuffer.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            A framebuffer can be thought of as a collection of
+                            handles to rectangular x by y buffers, each
+                            typically of the
+                            same dimensions as the surface. Each individual
+                            buffer is known in Vulkan as a <CT>VkImage</CT>,
+                            reflecting the resemblance to the common
+                            idea of an image: an x by y array. Each handle is
+                            known
+                            as a <CT>VkAttachment</CT>.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            The <I>viewport transformation</I> is an implicit
+                            but configurable step performed by Vulkan to convert
+                            the
+                            NDC into several sets of values. These resulting
+                            values are
+                            then written into separate attachments within the
+                            framebuffer.
+                            Finally, the buffers are used directly for the final
+                            output onto the monitor
+                        </Paragraph>
+                        <Spacer/>
+                        <Paragraph>
+                            The easiest example to understand is that of the
+                            color attachment.
+
+                            For each point in NDC space, the viewport
+                            transformation is
+                            performed to obtain its <Math
+                            tex={'(x, y)'}/> screen coordinate, and a color
+                            value written into the color
+                            attachment at that location. This color
+                            value is directly displayed on the surface at <Math
+                            tex={'(x, y)'}/>, completing the
+                            graphics pipeline.
+                        </Paragraph>
+                        <Spacer/>
+
+                        <Paragraph>
+                            Another important and frequently present attachment
+                            is the depth attachment. Each point in NDC space has
+                            a z-coordinate.
+                            After undergoing the viewport transformation, the
+                            processed z-coordinate
+                            is written into the depth attachment as a <I>depth
+                            value</I>.
+                            For each subsequent point processed, if the point
+                            happens to end up
+                            at the same <Math tex={'(x, y)'}/>
+                        </Paragraph>
+
+                        <SubCard>
+                            <Paragraph>
+                                The viewport transformation is determined by the
+                                selected viewport's width and height in
+                                pixels, <Math tex={'p_x'}/>
+                                and <Math tex={'p_y'}/> respectively, and its
+                                center <Math tex={'(o_x, o_y)'}/> (also in
+                                pixels),
+                                as well as its depth range min and max
+                                determining a depth range scale value
+                                <Math tex={'p_z'}/> and a depth range bias
+                                value <Math tex={'o_z'}/> (defined below).
+                                The vertex's framebuffer coordinates <Math
+                                tex={'(x_f, y_f)'}/> are given by
+
+                                <Math displayMode={true}
+                                      tex={'\\begin{align*}' +
+                                          'x_f = (\\frac{p_x}{2})x_d + o_x \\\\' +
+                                          'y_f = (\\frac{p_y}{2})y_d + o_y \\\\' +
+                                          'z_f = p_z \\times z_d + o_z' +
+                                          '\\end{align*}'}/>
+                            </Paragraph>
+                        </SubCard>
+
+                        <Paragraph>
                             Vulkan thus states that <Math
-                                tex={'x = -1'}/> corresponds to
+                            tex={'x_d = -1'}/> corresponds to
                             the left
                             edge of this surface, and <Math
-                                tex={'x = 1'}/> corresponds to
+                            tex={'x_d = 1'}/> corresponds to
                             the right edge
                             of this surface. Similarly, <Math
-                                tex={'y = -1'}/> corresponds to the top edge of
-                            this surface, and <Math tex={'y = 1'}/> corresponds
+                            tex={'y_d = -1'}/> corresponds to the top edge of
+                            this surface, and <Math
+                            tex={'y_d = 1'}/> corresponds
                             to the bottom edge
                             of this surface.
 
                             The z-coordinate of each point in the NDC is the
-                            <I>depth</I> of the point. Vulkan states that
+                            <I> depth</I> of the point. Vulkan states that
                             a point at <Math tex={'z = 0'}/> is exactly
-                            at the depth of the near plane, and a point at
+                            at the depth of the near plane, and a point at {' '}
                             <Math tex={'z = 1'}/> is exactly at the depth of
                             the far plane.
                             That is, relative to the camera, a point at <Math
-                                tex={'z = 0.1'}/>
+                            tex={'z = 0.1'}/>
                             is closer to the camera than a point at <Math
-                                tex={'z = 0.2'}/>.
+                            tex={'z = 0.2'}/>.
 
                             The matrix that performs this transformation is
                             called the <I>projection matrix</I>.
@@ -1106,6 +1362,31 @@ function SceneToScreen() {
                                       'z_n = \\frac{z_c}{w_c} &= \\frac{A \\cdot z_e + B \\cdot w_e}{w_c} \\\\' +
                                       'z_n &= \\frac{A \\cdot z_e + B}{-z_e}' +
                                       '\\end{align*}'}/>
+
+                            Solving a linear system with 2 variables requires
+                            2 inputs. Luckily, exactly two inputs are available.
+
+                            <Math displayMode={true}
+                                  tex={'\\begin{align*}' +
+                                      '0 &= \\frac{-An + B}{n}\\\\' +
+                                      '1 &= \\frac{-Af + B}{f}\\\\' +
+                                      'B &= An \\\\' +
+                                      '∴f &= -Af + An \\\\' +
+                                      '&= A(n-f) \\\\' +
+                                      '\\rightarrow A &= \\frac{f}{n-f}\\\\' +
+                                      '\\rightarrow B &= \\frac{fn}{n-f}' +
+                                      '\\end{align*}'}/>
+
+                            The final derived <Math tex={'P'}/> is thus
+
+                            <Math displayMode={true}
+                                  tex={'\\begin{bmatrix}' +
+                                      '\\frac{2n}{r-l} & 0 & \\frac{r+l}{l-r} & 0 \\\\' +
+                                      '0 & \\frac{2n}{b-t} & \\frac{b+t}{t-b} & 0 \\\\' +
+                                      '0 & 0 & \\frac{f}{n-f} & \\frac{fn}{n-f} \\\\' +
+                                      '0 & 0 & -1 & 0 \\\\' +
+                                      '\\end{bmatrix}'
+                                  }/>
 
 
                         </Paragraph>

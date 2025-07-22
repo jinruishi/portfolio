@@ -54,3 +54,9 @@ export function CT({children}) {
     return (<span className={textStyles.pCode}
                   style={{color: "var(--code-color-type"}}>{children}</span>);
 }
+
+// default (black)
+export function C({children}) {
+    return (<span className={textStyles.pCode}
+                  style={{color: "black"}}>{children}</span>);
+}
